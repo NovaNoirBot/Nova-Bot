@@ -3,7 +3,7 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Optional, List, Type, Any, Callable, Dict, Union, NoReturn, TypeVar, Iterator
 
 from nonebot import on_command
-from nonebot.permission import SUPERUSER, SuperUser
+from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11 import GROUP_ADMIN, GROUP_OWNER, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import Message as OneBotMessage, Bot as OneBotBot, Event as OneBotEvent
 from nonebot.dependencies import Dependent
@@ -420,7 +420,8 @@ async def _(event: GroupMessageEvent, service: OneBotMessage = Arg('services')):
             error_services.append(prepare_to_enable_service)
     if error_services:
         await enable_.send("开启" + " ".join(error_services) + "失败!")
-    await enable_.finish("成功开启" + " ".join(set(prepare_to_enable_services).difference(set(error_services))) + "!")
+    if success_services := set(prepare_to_enable_services).difference(set(error_services)):
+        await enable_.finish("成功开启" + " ".join(success_services) + "!")
 
 
 @disable_.got("services", prompt="你想要关闭什么服务呢?")
@@ -439,4 +440,5 @@ async def _(event: GroupMessageEvent, service: OneBotMessage = Arg('services')):
             error_services.append(prepare_to_disable_service)
     if error_services:
         await enable_.send("关闭" + " ".join(error_services) + "失败!")
-    await enable_.finish("成功关闭" + " ".join(set(prepare_to_disable_services).difference(set(error_services))) + "!")
+    if success_services := set(prepare_to_disable_services).difference(set(error_services)):
+        await enable_.finish("成功关闭" + " ".join(success_services) + "!")
