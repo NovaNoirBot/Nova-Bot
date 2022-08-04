@@ -2,7 +2,10 @@ from typing import Union, Tuple, Optional, Set, Type, List
 
 from nonebot.dependencies import Dependent
 from nonebot.permission import Permission
-from nonebot.plugin.on import on_command as nb_on_command
+from nonebot.plugin.on import (
+    on_command as nb_on_command,
+    on_message as nb_on_message
+)
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker, T_Handler, T_State, T_PermissionChecker
 
@@ -54,6 +57,42 @@ def on_command(
                             state=state)
     service = Service.new(
         service_name or cmd,  # Make it easier to migrate plugins
+        matcher,
+        help_=help_,
+        cd=cd,
+        limit=limit,
+        enable_on_default=enable_on_default,
+        invisible=invisible
+    )
+    return service
+
+
+def on_message(
+    service_name: str,
+    rule: Optional[Union[Rule, T_RuleChecker]] = None,
+    permission: Optional[Union[Permission, T_PermissionChecker]] = None,
+    *,
+    handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
+    temp: bool = False,
+    priority: int = 1,
+    block: bool = True,
+    state: Optional[T_State] = None,
+    help_: Optional[str] = None,
+    cd: int = 0,
+    limit: int = 0,
+    enable_on_default: bool = True,
+    invisible: bool = False,
+    _depth: int = 0
+) -> Type[Service]:
+    matcher = nb_on_message(rule,
+                            permission,
+                            handlers=handlers,
+                            temp=temp,
+                            priority=priority,
+                            block=block,
+                            state=state)
+    service = Service.new(
+        service_name,  # Make it easier to migrate plugins
         matcher,
         help_=help_,
         cd=cd,

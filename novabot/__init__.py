@@ -1,1 +1,1 @@
-from novabot.core import on_command
+from novabot.core import on_command, on_message
