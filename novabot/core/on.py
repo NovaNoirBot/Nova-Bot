@@ -68,21 +68,21 @@ def on_command(
 
 
 def on_message(
-    service_name: str,
-    rule: Optional[Union[Rule, T_RuleChecker]] = None,
-    permission: Optional[Union[Permission, T_PermissionChecker]] = None,
-    *,
-    handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
-    temp: bool = False,
-    priority: int = 1,
-    block: bool = True,
-    state: Optional[T_State] = None,
-    help_: Optional[str] = None,
-    cd: int = 0,
-    limit: int = 0,
-    enable_on_default: bool = True,
-    invisible: bool = False,
-    _depth: int = 0
+        service_name: str,
+        rule: Optional[Union[Rule, T_RuleChecker]] = None,
+        permission: Optional[Union[Permission, T_PermissionChecker]] = None,
+        *,
+        handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
+        temp: bool = False,
+        priority: int = 1,
+        block: bool = True,
+        state: Optional[T_State] = None,
+        help_: Optional[str] = None,
+        cd: int = 0,
+        limit: int = 0,
+        enable_on_default: bool = True,
+        invisible: bool = False,
+        _depth: int = 0
 ) -> Type[Service]:
     matcher = nb_on_message(rule,
                             permission,

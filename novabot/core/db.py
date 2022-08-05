@@ -1,6 +1,6 @@
 import pymongo
-from pydantic import BaseModel, Extra
 from nonebot import get_driver
+from pydantic import BaseModel, Extra
 
 
 class Config(BaseModel, extra=Extra.ignore):

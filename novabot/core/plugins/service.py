@@ -3,16 +3,16 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Optional, List, Type, Any, Callable, Dict, Union, NoReturn, TypeVar, Iterator
 
 from nonebot import on_command
-from nonebot.permission import SUPERUSER
 from nonebot.adapters.onebot.v11 import GROUP_ADMIN, GROUP_OWNER, GroupMessageEvent
 from nonebot.adapters.onebot.v11 import Message as OneBotMessage, Bot as OneBotBot, Event as OneBotEvent
 from nonebot.dependencies import Dependent
-from nonebot.params import CommandArg, Arg
 from nonebot.exception import IgnoredException
 from nonebot.internal.adapter import Message, MessageSegment, MessageTemplate, Bot, Event
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.message import run_preprocessor
+from nonebot.params import CommandArg, Arg
+from nonebot.permission import SUPERUSER
 from nonebot.typing import T_Handler, T_DependencyCache, T_State, T_TypeUpdater, T_PermissionUpdater
 
 from novabot.core.config_manager import ServiceConfig

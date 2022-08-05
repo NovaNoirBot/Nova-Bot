@@ -2,14 +2,13 @@
 Copied from `SK-415`, `https://github.com/SK-415/HarukaBot`
 """
 
-import sys
 import os
-
+import sys
 from typing import Optional, Literal
-from playwright.__main__ import main
-from playwright.async_api import Browser, async_playwright, Playwright
 
 from nonebot import get_driver
+from playwright.__main__ import main
+from playwright.async_api import Browser, async_playwright, Playwright
 
 __all__ = ["get_firefox_browser", "get_chromium_browser"]
 
@@ -50,6 +49,7 @@ async def get_firefox_browser(**kwargs) -> Browser:
 
 def install(browser: Literal["chromium", "firefox"] = "chromium"):
     """自动安装、更新 Chromium"""
+
     def restore_env():
         del os.environ["PLAYWRIGHT_DOWNLOAD_HOST"]
         if original_proxy is not None:
@@ -80,5 +80,6 @@ async def init():
     install("firefox")
     await init_chromium()
     await init_firefox()
+
 
 driver.on_startup(init)
