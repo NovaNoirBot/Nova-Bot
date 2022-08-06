@@ -1,10 +1,12 @@
+import re
 from typing import Union, Tuple, Optional, Set, Type, List
 
 from nonebot.dependencies import Dependent
 from nonebot.permission import Permission
 from nonebot.plugin.on import (
     on_command as nb_on_command,
-    on_message as nb_on_message
+    on_message as nb_on_message,
+    on_regex as nb_on_regex
 )
 from nonebot.rule import Rule
 from nonebot.typing import T_RuleChecker, T_Handler, T_State, T_PermissionChecker
@@ -92,7 +94,63 @@ def on_message(
                             block=block,
                             state=state)
     service = Service.new(
-        service_name,  # Make it easier to migrate plugins
+        service_name,
+        matcher,
+        help_=help_,
+        cd=cd,
+        limit=limit,
+        enable_on_default=enable_on_default,
+        invisible=invisible
+    )
+    return service
+
+
+def on_regex(
+    service_name :str,
+    pattern: str,
+    flags: Union[int, re.RegexFlag] = 0,
+    rule: Optional[Union[Rule, T_RuleChecker]] = None,
+    *,
+    permission: Optional[Union[Permission, T_PermissionChecker]] = None,
+    handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
+    temp: bool = False,
+    priority: int = 1,
+    block: bool = True,
+    state: Optional[T_State] = None,
+    help_: Optional[str] = None,
+    cd: int = 0,
+    limit: int = 0,
+    enable_on_default: bool = True,
+    invisible: bool = False,
+    _depth: int = 0
+) -> Type[Service]:
+    """
+    注册一个消息事件响应器，并且当消息匹配正则表达式时响应。
+
+    命令匹配规则参考: `正则匹配 <rule.md#regex-regex-flags-0>`_
+
+    参数:
+        pattern: 正则表达式
+        flags: 正则匹配标志
+        rule: 事件响应规则
+        permission: 事件响应权限
+        handlers: 事件处理函数列表
+        temp: 是否为临时事件响应器（仅执行一次）
+        priority: 事件响应器优先级
+        block: 是否阻止事件向更低优先级传递
+        state: 默认 state
+    """
+    matcher = nb_on_regex(pattern,
+                          flags,
+                          rule,
+                          permission=permission,
+                          handlers=handlers,
+                          temp=temp,
+                          priority=priority,
+                          block=block,
+                          state=state)
+    service = Service.new(
+        service_name,
         matcher,
         help_=help_,
         cd=cd,
