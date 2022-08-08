@@ -78,8 +78,6 @@ def install(browser: Literal["chromium", "firefox"] = "chromium"):
 async def init():
     install("chromium")
     install("firefox")
-    await init_chromium()
-    await init_firefox()
 
 
 driver.on_startup(init)
