@@ -106,23 +106,23 @@ def on_message(
 
 
 def on_regex(
-    service_name :str,
-    pattern: str,
-    flags: Union[int, re.RegexFlag] = 0,
-    rule: Optional[Union[Rule, T_RuleChecker]] = None,
-    *,
-    permission: Optional[Union[Permission, T_PermissionChecker]] = None,
-    handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
-    temp: bool = False,
-    priority: int = 1,
-    block: bool = True,
-    state: Optional[T_State] = None,
-    help_: Optional[str] = None,
-    cd: int = 0,
-    limit: int = 0,
-    enable_on_default: bool = True,
-    invisible: bool = False,
-    _depth: int = 0
+        service_name: str,
+        pattern: str,
+        flags: Union[int, re.RegexFlag] = 0,
+        rule: Optional[Union[Rule, T_RuleChecker]] = None,
+        *,
+        permission: Optional[Union[Permission, T_PermissionChecker]] = None,
+        handlers: Optional[List[Union[T_Handler, Dependent]]] = None,
+        temp: bool = False,
+        priority: int = 1,
+        block: bool = True,
+        state: Optional[T_State] = None,
+        help_: Optional[str] = None,
+        cd: int = 0,
+        limit: int = 0,
+        enable_on_default: bool = True,
+        invisible: bool = False,
+        _depth: int = 0
 ) -> Type[Service]:
     """
     注册一个消息事件响应器，并且当消息匹配正则表达式时响应。
