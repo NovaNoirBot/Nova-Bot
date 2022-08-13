@@ -20,7 +20,7 @@ def _is_reply_to_me(event: MessageEvent):
                  or
                  event.reply.sender.user_id == event.user_id
                  or
-                 event.sender.user_id in config.superusers if config.superusers else False))
+                 str(event.sender.user_id) in config.superusers if config.superusers else False))
 
 
 with_draw = on_command("撤回",
