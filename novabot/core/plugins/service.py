@@ -15,7 +15,8 @@ from nonebot.params import CommandArg, Arg
 from nonebot.permission import SUPERUSER
 from nonebot.typing import T_Handler, T_DependencyCache, T_State, T_TypeUpdater, T_PermissionUpdater
 
-from novabot.core.config_manager import ServiceConfig
+from novabot.core.service.config_manager import ServiceConfig
+from novabot.core.service.scheduler import scheduler_services, SchedulerServiceMeta
 
 T = TypeVar("T")
 
@@ -358,7 +359,11 @@ async def _(matcher: Matcher, event: OneBotEvent, bot: OneBotBot):
         return
 
     service = NewService()
-    config = ServiceConfig(service)
+    config = ServiceConfig(f"{service.matcher.plugin.module_name}.{service.service_name}",
+                           service.cd,
+                           service.limit,
+                           service.enable_on_default,
+                           service.invisible)
 
     if await SUPERUSER(bot, event):
         return
@@ -388,12 +393,14 @@ async def _(matcher: Matcher, event: OneBotEvent, bot: OneBotBot):
     return
 
 
+"""
 def from_full_name_to_Service(name: str) -> Iterator:
-    return filter(lambda x: f"{x.matcher.plugin.module_name}.{x.service_name}" == name, services)
+    return filter(lambda x: f"{x.matcher.plugin.module_name}.{x.service_name}" == name, services + scheduler_services)
+"""
 
 
 def from_short_name_to_Service(name: str) -> Iterator:
-    return filter(lambda x: x.service_name == name, services)
+    return filter(lambda x: x.service_name == name, services + scheduler_services)
 
 
 @enable_.handle()
@@ -405,17 +412,35 @@ async def _(state: T_State, arg: OneBotMessage = CommandArg()):
 
 @enable_.got("services", prompt="你想要开启什么服务呢?")
 async def _(event: GroupMessageEvent, service: OneBotMessage = Arg('services')):
-    print(services)
     prepare_to_enable_services = str(service).strip().split(' ')
     error_services = []
     for prepare_to_enable_service in prepare_to_enable_services:
         if prepare_to_enable_service in ['all', 'All', '全部']:
             for x in services:
-                ServiceConfig(x()).enable_service(event.group_id)
+                ServiceConfig(f"{x.matcher.plugin.module_name}.{x.service_name}",
+                              x.cd,
+                              x.limit,
+                              x.enable_on_default,
+                              x.invisible).enable_service(event.group_id)
+            for x in scheduler_services:
+                ServiceConfig(x.full_name,
+                              enable_on_default=x.enable_on_default,
+                              invisible=x.invisible,
+                              help_=x.help_).enable_service(event.group_id)
             break
         try:
             service_Service = next(from_short_name_to_Service(prepare_to_enable_service))
-            ServiceConfig(service_Service()).enable_service(event.group_id)
+            if isinstance(service_Service, Service):
+                ServiceConfig(f"{service_Service.matcher.plugin.module_name}.{service_Service.service_name}",
+                              service_Service.cd,
+                              service_Service.limit,
+                              service_Service.enable_on_default,
+                              service_Service.invisible).enable_service(event.group_id)
+            elif isinstance(service_Service, SchedulerServiceMeta):
+                ServiceConfig(service_Service.full_name,
+                              enable_on_default=service_Service.enable_on_default,
+                              invisible=service_Service.invisible,
+                              help_=service_Service.help_).enable_service(event.group_id)
         except StopIteration:
             error_services.append(prepare_to_enable_service)
     if error_services:
@@ -431,11 +456,30 @@ async def _(event: GroupMessageEvent, service: OneBotMessage = Arg('services')):
     for prepare_to_disable_service in prepare_to_disable_services:
         if prepare_to_disable_service in ['all', 'All', '全部']:
             for x in services:
-                ServiceConfig(x()).disable_service(event.group_id)
+                ServiceConfig(f"{x.matcher.plugin.module_name}.{x.service_name}",
+                              x.cd,
+                              x.limit,
+                              x.enable_on_default,
+                              x.invisible).disable_service(event.group_id)
+            for x in scheduler_services:
+                ServiceConfig(x.full_name,
+                              enable_on_default=x.enable_on_default,
+                              invisible=x.invisible,
+                              help_=x.help_).disable_service(event.group_id)
             break
         try:
             service_Service = next(from_short_name_to_Service(prepare_to_disable_service))
-            ServiceConfig(service_Service()).disable_service(event.group_id)
+            if isinstance(service_Service, Service):
+                ServiceConfig(f"{service_Service.matcher.plugin.module_name}.{service_Service.service_name}",
+                              service_Service.cd,
+                              service_Service.limit,
+                              service_Service.enable_on_default,
+                              service_Service.invisible).disable_service(event.group_id)
+            elif isinstance(service_Service, SchedulerServiceMeta):
+                ServiceConfig(service_Service.full_name,
+                              enable_on_default=service_Service.enable_on_default,
+                              invisible=service_Service.invisible,
+                              help_=service_Service.help_).disable_service(event.group_id)
         except StopIteration:
             error_services.append(prepare_to_disable_service)
     if error_services:

@@ -1,6 +1,6 @@
 from nonebot import get_driver
-from nonebot.rule import Rule
 from nonebot.adapters.onebot.v11 import MessageEvent, Bot, ActionFailed
+from nonebot.rule import Rule
 
 from novabot import on_command
 
@@ -42,4 +42,3 @@ async def _(bot: Bot, event: MessageEvent):
         await bot.call_api("delete_msg", message_id=event.message_id)  # Try to withdraw Triggering Message
     except ActionFailed:
         pass
-

@@ -10,3 +10,5 @@ class Config(BaseModel, extra=Extra.ignore):
 config = Config.parse_obj(get_driver().config)
 
 DB = pymongo.MongoClient(config.mongodb_url)["NovaBot"]
+
+__all__ = ['DB']

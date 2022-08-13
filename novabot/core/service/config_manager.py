@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional
 
 import pymongo
 from nonebot import get_bot
@@ -9,9 +9,6 @@ from nonebot.log import logger
 
 from novabot.core.db import DB
 
-if TYPE_CHECKING:
-    from novabot.core.plugins.service import Service
-
 ServiceMongoDB = DB['services']
 ServiceMongoDB.create_index([("service_name", pymongo.TEXT)])
 
@@ -19,6 +16,11 @@ ServiceMongoDB.create_index([("service_name", pymongo.TEXT)])
 @dataclass
 class ServiceDatabase:
     service_name: str
+    cd: int
+    limit: int
+    enable_on_default: bool
+    invisible: bool
+    help_: str
     enable_groups: List[int]
     disable_groups: List[int]
     cd_dict: Dict[str, Dict[str, float]]
@@ -26,22 +28,27 @@ class ServiceDatabase:
 
 
 class ServiceConfig:
-    def __init__(self, service: "Service"):
-        """
-        To make the `service_name` be more unique, we use `%module_name%.%service_name%` as its identity.
-        """
-        self.name = f"{service.matcher.plugin.module_name}.{service.service_name}"
-        self.service = service
+    def __init__(self,
+                 name: str,
+                 cd: Optional[int] = 0,
+                 limit: Optional[int] = 0,
+                 enable_on_default: Optional[bool] = True,
+                 invisible: Optional[bool] = False,
+                 help_: Optional[str] = None,
+                 force: Optional[bool] = False
+                 ):
+        self.name = name
         try:
-            n = next(ServiceMongoDB.find({"service_name": self.name}))
-            n.pop("_id")
-            self.data = ServiceDatabase(**n)
+            n = next(ServiceMongoDB.find({"service_name": self.name}), None)
+            if not n or force:
+                self.data = initialize_ServiceConfig(name, cd, limit, enable_on_default, invisible, help_)
+                ServiceMongoDB.insert_one(self.data.__dict__)
+            else:
+                n.pop("_id")
+                self.data = ServiceDatabase(**n)
 
-        except StopIteration:  # First Initialize
-            self.data = ServiceDatabase(self.name, [], [], {}, {})
-            ServiceMongoDB.insert_one(self.data.__dict__)
         except TypeError:  # For Update
-            new_data = ServiceDatabase(self.name, [], [], {}, {}).__dict__
+            new_data = initialize_ServiceConfig(name, cd, limit, enable_on_default, invisible, help_).__dict__
             n = next(ServiceMongoDB.find({"service_name": self.name}))
             new_data.update(n)
             new_data.pop("_id")
@@ -81,15 +88,10 @@ class ServiceConfig:
         n = ServiceMongoDB.find({"service_name": self.name})
         return [dict(x) for x in n]
 
-    def _force_new(self):
-        ServiceMongoDB.delete_many({"service_name": self.name})
-        self.data = ServiceDatabase(self.name, [], [], {}, {})
-        ServiceMongoDB.insert_one(self.data.__dict__)
-
     def is_enable_in_group(self, grp_id: int) -> bool:
         return (grp_id in self.data.enable_groups) \
                or \
-               (grp_id not in self.data.disable_groups and self.service.enable_on_default)
+               (grp_id not in self.data.disable_groups and self.data.enable_on_default)
 
     async def check_if_cd_available(self, event: Event, reset: bool = True) -> bool:
         available = True
@@ -114,7 +116,7 @@ class ServiceConfig:
         usr_id = str(usr_id)
         grp_cd_dict = self.data.cd_dict.get(grp_id, {})
         cd = grp_cd_dict.get(usr_id, 0)
-        return datetime.now().timestamp() - cd > self.service.cd
+        return datetime.now().timestamp() - cd > self.data.cd
 
     def _update_cd(self, usr_id: int, grp_id: Optional[int] = 0):
         grp_id = str(grp_id)
@@ -152,7 +154,7 @@ class ServiceConfig:
         if datetime.now().day - datetime.fromtimestamp(date).day > 0 \
                 or (datetime.now() - datetime.fromtimestamp(date)).days > 0:
             return True
-        return limit < self.service.limit
+        return limit < self.data.limit
 
     def _update_limit(self, usr_id: int, grp_id: Optional[int] = 0):
         grp_id = str(grp_id)
@@ -171,3 +173,12 @@ class ServiceConfig:
         grp_limit_dict[usr_id] = limit_dict
         self.data.limit_dict[grp_id] = grp_limit_dict
         self._update()
+
+
+def initialize_ServiceConfig(name: str,
+                             cd: int,
+                             limit: int,
+                             enable_on_default: bool,
+                             invisible: bool,
+                             help_: str) -> ServiceDatabase:
+    return ServiceDatabase(name, cd, limit, enable_on_default, invisible, help_, [], [], {}, {})
