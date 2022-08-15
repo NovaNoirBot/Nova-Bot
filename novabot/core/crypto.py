@@ -83,8 +83,8 @@ def __get_qq_secret_and_iv(qq: Union[int, str],
     否则 `SECRET` 为 32 位随机字节, `IV` 为 16 位随机字节
     :param qq: QQ 号
     :param path: 文件所在的目录路径, 默认为 `Nova-Bot/data/crypto/`
-    :param secret: 仅在 `文件不存在` 或 `force == True` 的情况下作用, 指定文件的 `SECRET` 值 (不对长度进行校验)
-    :param iv: 仅在 `文件不存在` 或 `force == True` 的情况下作用, 指定文件的 `IV` 值 (不对长度进行校验)
+    :param secret: 仅在 `文件不存在` 或 `force == True` 的情况下作用, 指定文件的 `SECRET` 值 32 bits
+    :param iv: 仅在 `文件不存在` 或 `force == True` 的情况下作用, 指定文件的 `IV` 值 16 bits
     :param force: 是否强制更新文件, 默认为 `否`
     :return: 包含 `SECRET` 与 `IV` 的元组
     """
@@ -100,12 +100,14 @@ def __get_qq_secret_and_iv(qq: Union[int, str],
         with open(path, 'wb') as f:
             results = (secret or get_random_bytes(32),
                        iv or get_random_bytes(16))
-            f.write(b"\n".join(results))
+            f.write(b"\r\n".join(results))
         path.chmod(0o600)
     else:
         with open(path, 'rb') as f:
             results = f.readlines()
-            results = tuple(map(lambda x: x.replace(b"\n", b""), results))
+            results = tuple(map(lambda x: x.replace(b"\r\n", b""), results))
+        if len(results) != 2:  # Re-generate secret and iv for corrupted file
+            __get_qq_secret_and_iv(qq, path, secret=secret, iv=iv, force=force)
     return results
 
 
