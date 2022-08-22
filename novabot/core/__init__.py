@@ -1,3 +1,5 @@
-from .on import on_command, on_message, on_regex
-from .plugins.Playwright import get_firefox_browser, get_chromium_browser
-from .service.scheduler import scheduler
+from nonebot import load_plugin, require
+
+from .service.service import Service
+from .Playwright import get_firefox_browser, get_chromium_browser
+from .db import DB

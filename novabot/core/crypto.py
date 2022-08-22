@@ -107,7 +107,7 @@ def __get_qq_secret_and_iv(qq: Union[int, str],
             results = f.readlines()
             results = tuple(map(lambda x: x.replace(b"\r\n", b""), results))
         if len(results) != 2:  # Re-generate secret and iv for corrupted file
-            __get_qq_secret_and_iv(qq, path, secret=secret, iv=iv, force=force)
+            __get_qq_secret_and_iv(qq, path, secret=secret, iv=iv, force=True)
     return results
 
 

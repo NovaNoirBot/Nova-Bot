@@ -1,17 +1,18 @@
-from nonebot import get_driver
+from nonebot import get_driver, on_command
 from nonebot.adapters.onebot.v11 import MessageEvent, Bot, ActionFailed
+from nonebot.plugin import PluginMetadata
 from nonebot.rule import Rule
 
-from novabot import on_command
+from novabot import Service
 
 config = get_driver().config
-__help__ = """通过回复BOT的发言并输入"撤回"即可撤回bot的发言，用于防止色图炸群刷屏等
-    Type: ReplyEvent
-用法:
-    .withdraw
-    撤回
-    撤
-"""
+__plugin_meta__ = PluginMetadata(
+    name='Withdraw',
+    description='通过回复BOT的发言并输入"撤回"即可撤回bot的发言，用于防止色图炸群刷屏等',
+    usage=""".withdraw
+撤回
+撤"""
+)
 
 
 def _is_reply_to_me(event: MessageEvent):
@@ -27,8 +28,7 @@ with_draw = on_command("撤回",
                        aliases={"撤", ".withdraw"},
                        rule=Rule(_is_reply_to_me),
                        priority=1,
-                       block=True,
-                       help_=__help__)
+                       block=True)
 
 
 @with_draw.handle()
@@ -42,3 +42,5 @@ async def _(bot: Bot, event: MessageEvent):
         await bot.call_api("delete_msg", message_id=event.message_id)  # Try to withdraw Triggering Message
     except ActionFailed:
         pass
+
+Service(with_draw)
